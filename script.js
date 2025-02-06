@@ -171,6 +171,6 @@ function ticTacToe() {
 }
 
 
-// WHOLE GAME (9 ROUNDS)
-const game = ticTacToe();
-game.newGame();
+// WHOLE GAME
+// const game = ticTacToe();
+// game.newGame();
