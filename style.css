@@ -1,4 +1,56 @@
 :root {
     font-family: "Open Sans", sans-serif;
     font-size: 16px;
+    --cell-color: white;
+    --board-line-color: black;
+    --button-color: lightblue;
+    --footer-color: gray;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    width: 50%;
+    margin: 2.5rem auto;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 10em);
+    gap: .25rem;
+    background-color: var(--board-line-color);
+    margin-bottom: 2.5rem;
+}
+
+.cell {
+    background-color: var(--cell-color);
+    font-size: 9rem;
+    font-weight: 500;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cell:hover {
+    opacity: 0.9;
+}
+
+.info-box {
+    text-align: center;
+}
+
+footer {
+    background-color: var(--footer-color);
+    margin-top: auto;
+    text-align: center;
 }
