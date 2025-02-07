@@ -16,40 +16,50 @@
 </head>
 <body>
     <header>
-        <div class="header-top">
-            <h1>Tic Tac Toe</h1>
-            <button>Start new game</button>
-        </div>
-        <div class="header-bot hidden">
-            <form action="">
-                <label for="p1-name">Player 1 name: </label>
-                <input type="text" name="p1-name" id="p1-name">
-                <label for="p2-name">Player 2 name: </label>
-                <input type="text" name="p2-name" id="p2-name">
-                <button type="submit">Let's go!</button>
-            </form>
+        <div class="content">
+            <div class="header-top">
+                <h1>Tic Tac Toe</h1>
+                <button>Start new game</button>
+            </div>
+            <div class="header-bot">
+                <form action="">
+                    <div class="form-left">
+                        <div class="player-info">
+                            <label for="p1-name">Player 1 name: </label>
+                            <input type="text" name="p1-name" id="p1-name" maxlength="20" required>
+                        </div>
+                        <div class="player-info">
+                            <label for="p2-name">Player 2 name: </label>
+                            <input type="text" name="p2-name" id="p2-name" maxlength="20" required>
+                        </div>
+                    </div>
+                    <div class="form-right">
+                        <button type="submit">Let's go!</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </header>
     <main>
-        <div class="board-container">
+        <div class="content">
             <div class="board">
-                <div class="cell">X</div>
-                <div class="cell">O</div>
-                <div class="cell">O</div>
-                <div class="cell">O</div>
-                <div class="cell">X</div>
-                <div class="cell">O</div>
-                <div class="cell">X</div>
-                <div class="cell">X</div>
-                <div class="cell">X</div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
             </div>
-        </div>
-        <div class="info-box">
-            <p>Greetings! Click 'Start new game' to play!</p>
+            <div class="info-box">
+                <p>Greetings! Click 'Start new game' to play!</p>
+            </div>
         </div>
     </main>
     <footer>
-        <p>&copy; 2025 Skorzany</p>
+        <a href="https://github.com/skorzany/">&copy; 2025 Skorzany</a>
     </footer>
 </body>
 </html>
