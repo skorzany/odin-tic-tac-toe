@@ -94,11 +94,20 @@ function player(name, marker) {
 
 function ticTacToe() {
     const players = [player("John", "X"), player("Jenny", "O")];
+    const buttons = [...document.body.querySelectorAll("button")];
     let roundNumber;
     let board;
+    let viewer;
     let gameEnded;
     let currentPlayer;
     let tilesToHighlight;
+
+    buttons[0].addEventListener("click", () => {viewer.showForm();});
+
+    buttons[1].addEventListener("click", (e) => {
+        e.preventDefault();
+        viewer.hideForm();
+    });
 
     const endGame = () => gameEnded = true;
     const advanceRound = () => roundNumber++;
@@ -153,6 +162,8 @@ function ticTacToe() {
     const setDefaultState = () => {
         roundNumber = 0;
         board = gameBoard();
+        viewer = viewController();
+        viewer.updateBoard();
         gameEnded = false;
         tilesToHighlight = [];
     }
@@ -164,6 +175,42 @@ function ticTacToe() {
         }
         viewSummary(tilesToHighlight, currentPlayer);
     }
+    const viewController = () => {
+        const formContainer = document.body.querySelector(".header-bot");
+        const boardContainer = document.body.querySelector(".board");
+        const infoText = document.body.querySelector(".info-box p");
+
+        for(row of board.getBoard()) {
+            for(obj of row) {
+                const newCell = document.createElement("div");
+                newCell.classList.add("cell", "empty");
+                newCell.object = obj;
+                boardContainer.appendChild(newCell);
+            }
+        }
+        const showForm = () => {
+            formContainer.classList.remove("hidden");
+        }
+        const hideForm = () => {
+            formContainer.classList.add("hidden");
+        }
+        const updateBoard = () => {
+            for(ele of boardContainer.children) {
+                ele.textContent = ele.object.getMarker();
+                if(!ele.object.isEmpty()) ele.classList.remove("empty");
+            }
+        }
+        const updateInfo = (txt) => {
+            infoText.textContent = txt;
+        }
+
+        return {
+            showForm,
+            hideForm,
+            updateBoard,
+            updateInfo,
+        }
+    }
 
     return {
         newGame,
@@ -172,5 +219,5 @@ function ticTacToe() {
 
 
 // WHOLE GAME
-// const game = ticTacToe();
-// game.newGame();
+const game = ticTacToe();
+game.newGame();
