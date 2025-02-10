@@ -20,6 +20,10 @@ body {
     display: none;
 }
 
+.invisible {
+    visibility: hidden;
+}
+
 .content {
     width: clamp(var(--min-content-width), 50%, var(--max-content-width));
     padding: 1rem;
