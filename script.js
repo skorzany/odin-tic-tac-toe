@@ -1,101 +1,90 @@
-function cell(symbol="") {
-    let marker = symbol;
-
-    const getMarker = () => marker;
-    const setMarker = (m) => marker = m;
-    const isEmpty = () => !marker;
-
-    return {
-        getMarker,
-        setMarker,
-        isEmpty,
-    }
-}
-
-function gameBoard() {
-    const ROWNUM = 3;
-    const COLNUM = 3;
-    const board = [];
-
-    for(r = 0; r < ROWNUM; r++) {
-        const row = [];
-        for(c = 0; c < COLNUM; c++) {
-            row.push(cell());
-        }
-        board.push(row);
-    }
-
-    const placeMarker = function (cell, marker) {
-        if (cell.isEmpty()){
-            cell.setMarker(marker);
-        }
-    }
-
-    const getBoard = () => board;
-
-    const findTriple = function (symbol) {
-        let triples = [];
-        const matchingSymbol = (obj) => obj.getMarker() === symbol;
-        // rows
-        for(row of board) {
-            if(row.every(matchingSymbol)) triples.push(row);
-        }
-        // columns
-        for(let r = 0; r < ROWNUM; r++) {
-            const column = [];
-            for(let c = 0; c < COLNUM; c++) {
-                column.push(board[c][r]);
-            }
-            if(column.every(matchingSymbol)) triples.push(column);
-        }
-        // diagonals
-        const diagonals = [[], []];
-        for(let i = 0; i < ROWNUM; i++) {
-            diagonals[0].push(board[i][i]);
-            diagonals[1].push(board[i][-i + 2]);
-        }
-        for(diagonal of diagonals){
-            if(diagonal.every(matchingSymbol)) triples.push(diagonal);
-        }
-
-        return triples;
-    }
-
-    //below are helper functions only for console version, they will be removed later
-
-    const printBoard = () => {
-        const output = board.map((row => (row.map((cell) => cell.getMarker()))));
-        console.log(output);
-    }
-
-    const getCell = (x, y) => board[x][y];
-
-    return {
-        placeMarker,
-        getBoard,
-        findTriple,
-        printBoard,
-        getCell,
-    }
-}
-
-function player(name, marker) {
-    const myName = name;
-    const myMarker = marker;
-
-    const getName = () => myName;
-    const getMarker = () => myMarker;
-
-    return {
-        getName,
-        getMarker,
-    }
-}
-
 function ticTacToe() {
+    /* ========== COMPOSITION OBJECTS ========== */
+    function player(name, marker) {
+        /* ========== LOGIC ========== */
+        const myName = name;
+        const myMarker = marker;
+    
+        const getName = () => myName;
+        const getMarker = () => myMarker;
+    
+        return {
+            getName,
+            getMarker,
+        }
+    }
+
+    function gameBoard() {
+        /* ========== COMPOSITION OBJECTS ========== */
+        function cell(symbol="") {
+            let marker = symbol;
+        
+            const getMarker = () => marker;
+            const setMarker = (m) => marker = m;
+            const isEmpty = () => !marker;
+        
+            return {
+                getMarker,
+                setMarker,
+                isEmpty,
+            }
+        };
+        /* ========== LOGIC ========== */
+        const ROWNUM = 3;
+        const COLNUM = 3;
+        const board = [];
+    
+        for(r = 0; r < ROWNUM; r++) {
+            const row = [];
+            for(c = 0; c < COLNUM; c++) {
+                row.push(cell());
+            }
+            board.push(row);
+        }
+    
+        const getBoard = () => board;
+        const placeMarker = function (cell, marker) {
+            if (cell.isEmpty()){
+                cell.setMarker(marker);
+            }
+        }
+        const findTriples = function (symbol) {
+            let triples = new Set();
+            const matchingSymbol = (obj) => obj.getMarker() === symbol;
+            // rows
+            for(row of board) {
+                if(row.every(matchingSymbol)) row.forEach(item => triples.add(item.i));
+            }
+            // columns
+            for(let r = 0; r < ROWNUM; r++) {
+                const column = [];
+                for(let c = 0; c < COLNUM; c++) {
+                    column.push(board[c][r]);
+                }
+                if(column.every(matchingSymbol)) column.forEach(item => triples.add(item.i));
+            }
+            // diagonals
+            const diagonals = [[], []];
+            for(let i = 0; i < ROWNUM; i++) {
+                diagonals[0].push(board[i][i]);
+                diagonals[1].push(board[i][-i + 2]);
+            }
+            for(diagonal of diagonals){
+                if(diagonal.every(matchingSymbol)) diagonal.forEach(item => triples.add(item.i));
+            }
+            return triples;
+        }
+    
+        return {
+            getBoard,
+            placeMarker,
+            findTriples,
+        }
+    }
+    /* ========== LOGIC ========== */
+    const ROUNDLIMIT = 8;
     let board;
     let roundNumber;
-    let gameEnded;
     let currentPlayer;
     let tilesToHighlight;
     let players = [undefined, undefined];
@@ -108,12 +97,16 @@ function ticTacToe() {
     const info = document.body.querySelector(".info-box p");
     const viewer = (function () {
         const createBoardView = () => {
+            let idx = 0;
             for(row of board.getBoard()) {
                 for(obj of row) {
+                    obj.i = idx;
                     const newCell = document.createElement("div");
+                    newCell.setAttribute("data-idx", idx);
                     newCell.classList.add("cell", "empty");
                     newCell.object = obj;
                     boardContainer.appendChild(newCell);
+                    idx += 1;
                 }
             }
         }
@@ -147,99 +140,82 @@ function ticTacToe() {
         }
     })();
 
-    button.addEventListener("click", () => {
-        viewer.deleteBoardView();
-        viewer.clearInputs();
-        viewer.showForm();
-        viewer.hideButton();
-    });
-
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        createPlayers();
-        viewer.hideForm();
-        viewer.showButton();
-        newGame();
-    });
-
+    const initialize = () => {
+        viewer.updateInfo(createMessage());
+        button.addEventListener("click", () => {
+            viewer.deleteBoardView();
+            viewer.clearInputs();
+            viewer.showForm();
+            viewer.hideButton();
+            viewer.updateInfo(createMessage());
+        });
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            viewer.hideForm();
+            viewer.showButton();
+            newGame();
+        });
+    }
     const createPlayers = () => {
         const [p1name, p2name] = inputs.map(ele => ele.value);
         players[0] = player(p1name, "X");
         players[1] = player(p2name, "O");
     }
-    const endGame = () => gameEnded = true;
     const advanceRound = () => roundNumber++;
-    const getCurrentPlayer = () => players[roundNumber%2];
-    const getRoundInfo = () => {
-        `It's ${currentPlayer.getMarker()} (${currentPlayer.getName()}'s) turn.`;
-    }
-    const grabInput = () => {
-        let emptyCell = false;
-        while(!emptyCell) {
-            var row = prompt("Row number?");
-            var column = prompt("Column number?");
-            emptyCell = board.getCell(row, column).isEmpty();
-            if(!emptyCell) alert("This cell is already claimed!");
-        }
-        return [row, column];
-    }
-    const viewSummary = (winningCells, player) => {
-        let msg = "Game ended. "
-        if(winningCells.length) {
-            msg += `${player.getMarker()} (${player.getName()}) wins!`;
-        }
+    const setCurrentPlayer = () => currentPlayer = players[roundNumber%2];
+    const createMessage = () => {
+        let msg;
+        if (button.classList.contains("invisible")) msg = "Waiting for player names...";
+        else if (!boardContainer.children.length) msg = "Greetings! Click 'Start new game' to play!";
         else {
-            msg += "It's a tie!";
+            if (tilesToHighlight.size) msg = `Game end. ${currentPlayer.getName()} (${currentPlayer.getMarker()}) wins!`;
+            else if (ROUNDLIMIT < roundNumber) msg = "Game end. It's a tie!";
+            else msg = `It's ${currentPlayer.getName()}'s (${currentPlayer.getMarker()}) turn.`;
         }
-        console.log(msg);
-        board.printBoard();
-        console.log(winningCells);
+        return msg;
     }
-    const playRound = () => {
-        // change current player;
-        currentPlayer = getCurrentPlayer();
-        // grab current player's symbol;
+    const playRound = (event) => {
+        const ele = event.target;
         const symbol = currentPlayer.getMarker();
-        // show the board & info;
-        viewer.updateBoard();
-        viewer.updateInfo(getRoundInfo());
-        // board.printBoard();
-        // gather input (it should ask forever until it is valid);
-        // const coords = grabInput();
-        // place marker on given cell;
-        // board.placeMarker(board.getCell(...coords), symbol);
-        // check for win condition but only when there were at least 4 rounds played;
-        if(4 <= roundNumber) {
-            const winningCells = board.findTriple(symbol);
-            if(winningCells.length || roundNumber === 8) {
-                endGame();
-                return winningCells;
+        if (ele.classList.contains("empty")) {
+            ele.classList.remove("empty");
+            ele.object.setMarker(symbol);
+            viewer.updateBoard();
+            if (0.5*ROUNDLIMIT <= roundNumber) tilesToHighlight = board.findTriples(symbol);
+            if (tilesToHighlight.size || roundNumber == ROUNDLIMIT + 1) {
+                for(child of boardContainer.children) {
+                    child.classList.remove("empty");
+                    if (tilesToHighlight.has(Number(child.dataset.idx))) child.classList.add("winner");
+                }
+                viewer.updateInfo(createMessage());
+                boardContainer.removeEventListener("click", playRound);
+                return;
             }
+            advanceRound();
+            setCurrentPlayer();
+            viewer.updateInfo(createMessage());
         }
-        advanceRound();
     }
     const setDefaultState = () => {
         roundNumber = 0;
-        gameEnded = false;
         board = gameBoard();
         tilesToHighlight = [];
     }
     const newGame = () => {
         setDefaultState();
+        createPlayers();
+        setCurrentPlayer();
         viewer.createBoardView();
-        while(!gameEnded) {
-            roundOutput = playRound();
-            if(roundOutput !== undefined) tilesToHighlight.push(...roundOutput);
-        }
-        viewSummary(tilesToHighlight, currentPlayer);
+        viewer.updateInfo(createMessage());
+        boardContainer.addEventListener("click", playRound);
     }
 
     return {
-        newGame,
+        initialize,
     }
 }
 
 
-// WHOLE GAME
+// RUN GAME
 const game = ticTacToe();
-// game.newGame();
+game.initialize();

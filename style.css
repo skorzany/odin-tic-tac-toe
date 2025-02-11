@@ -7,6 +7,8 @@
     --board-line-color: black;
     --button-color: lightblue;
     --footer-color: gray;
+    --wining-font-color: red;
+    --winning-bg-color: gray;
 }
 
 body {
@@ -64,6 +66,12 @@ header .content{
     gap: 2rem;
 }
 
+.player-info {
+    display: flex;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
 .player-info+.player-info {
     margin-top: .5rem;
 }
@@ -91,7 +99,7 @@ main .content {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 2.5rem;
+    gap: 3rem;
 }
 
 .board {
@@ -104,11 +112,20 @@ main .content {
 
 .cell {
     background-color: var(--cell-color);
-    font-size: clamp(5rem, 10vw ,8rem);
+    font-size: clamp(3.25rem, 10vw, 7rem);
     aspect-ratio: 1;
     align-self: stretch;
     text-align: center;
     cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.winner {
+    color: var(--wining-font-color);
+    background-color: var(--winning-bg-color);
 }
 
 .empty:hover {
