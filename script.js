@@ -1,73 +1,6 @@
-function gameBoard() {
-    function cell(symbol="") {
-        let marker = symbol;
-    
-        const getMarker = () => marker;
-        const setMarker = (m) => marker = m;
-        const isEmpty = () => !marker;
-    
-        return {
-            getMarker,
-            setMarker,
-            isEmpty,
-        }
-    };
-    const ROWNUM = 3;
-    const COLNUM = 3;
-    const board = [];
-
-    for(let r = 0; r < ROWNUM; r++) {
-        const row = [];
-        for(let c = 0; c < COLNUM; c++) {
-            row.push(cell());
-        }
-        board.push(row);
-    }
-
-    const getBoard = () => board;
-    const placeMarker = function (cell, marker) {
-        if(cell.isEmpty()){
-            cell.setMarker(marker);
-        }
-    }
-    const findTriples = function (symbol) {
-        let triples = new Set();
-        const matchingSymbol = (obj) => obj.getMarker() === symbol;
-        // rows
-        for(let row of board) {
-            if(row.every(matchingSymbol)) row.forEach(item => triples.add(item.i));
-        }
-        // columns
-        for(let r = 0; r < ROWNUM; r++) {
-            const column = [];
-            for(let c = 0; c < COLNUM; c++) {
-                column.push(board[c][r]);
-            }
-            if(column.every(matchingSymbol)) column.forEach(item => triples.add(item.i));
-        }
-        // diagonals
-        const diagonals = [[], []];
-        for(let i = 0; i < ROWNUM; i++) {
-            diagonals[0].push(board[i][i]);
-            diagonals[1].push(board[i][-i + 2]);
-        }
-        for(let diagonal of diagonals){
-            if(diagonal.every(matchingSymbol)) diagonal.forEach(item => triples.add(item.i));
-        }
-        return triples;
-    }
-
-    return {
-        getBoard,
-        placeMarker,
-        findTriples,
-    }
-}
-
-
-const game = (function ticTacToe() {
+const ticTacToe = (function () {
     const ROUNDLIMIT = 8;
-    let board;
+
     let roundNumber;
     let currentPlayer;
     let tilesToHighlight;
@@ -81,6 +14,79 @@ const game = (function ticTacToe() {
     const inputs = [...form.querySelectorAll("input[type='text']")];
     const boardContainer = main.querySelector(".content .board");
     const info = main.querySelector(".content .info-box p");
+    const board = (function () {
+        const ROWNUM = 3;
+        const COLNUM = 3;
+        const board = [];
+        function cell(symbol="") {
+            let marker = symbol;
+
+            const getMarker = () => marker;
+            const setMarker = (m) => marker = m;
+            const isEmpty = () => !marker;
+
+            return {
+                getMarker,
+                setMarker,
+                isEmpty,
+            }
+        };
+
+        for(let r = 0; r < ROWNUM; r++) {
+            const row = [];
+            for(let c = 0; c < COLNUM; c++) {
+                row.push(cell());
+            }
+            board.push(row);
+        }
+
+        const getBoard = () => board;
+        const clear = () => {
+            for(let row of board) {
+                for(let c = 0; c < COLNUM; c++) {
+                    row[c] = cell();
+                }
+            }
+        }
+        const placeMarker = function (cell, marker) {
+            if(cell.isEmpty()){
+                cell.setMarker(marker);
+            }
+        }
+        const findTriples = function (symbol) {
+            let triples = new Set();
+            const matchingSymbol = (obj) => obj.getMarker() === symbol;
+            // rows
+            for(let row of board) {
+                if(row.every(matchingSymbol)) row.forEach(item => triples.add(item.i));
+            }
+            // columns
+            for(let r = 0; r < ROWNUM; r++) {
+                const column = [];
+                for(let c = 0; c < COLNUM; c++) {
+                    column.push(board[c][r]);
+                }
+                if(column.every(matchingSymbol)) column.forEach(item => triples.add(item.i));
+            }
+            // diagonals
+            const diagonals = [[], []];
+            for(let i = 0; i < ROWNUM; i++) {
+                diagonals[0].push(board[i][i]);
+                diagonals[1].push(board[i][-i + 2]);
+            }
+            for(let diagonal of diagonals){
+                if(diagonal.every(matchingSymbol)) diagonal.forEach(item => triples.add(item.i));
+            }
+            return triples;
+        }
+
+        return {
+            getBoard,
+            clear,
+            placeMarker,
+            findTriples,
+        }
+    })();
     const viewer = (function () {
         const createBoardView = () => {
             let idx = 0;
@@ -108,7 +114,7 @@ const game = (function ticTacToe() {
             for(let ele of boardContainer.children) {
                 const obj = ele.object;
                 ele.textContent = obj.getMarker();
-                if(!obj.isEmpty()) ele.classList.remove("empty"); 
+                if(!obj.isEmpty()) ele.classList.remove("empty");
             }
         }
         const updateInfo = (text) => info.textContent = text;
@@ -125,7 +131,6 @@ const game = (function ticTacToe() {
             updateInfo,
         }
     })();
-
     const initialize = () => {
         phase = "start-new";
         viewer.updateInfo(createMessage());
@@ -148,10 +153,10 @@ const game = (function ticTacToe() {
         function player(name, marker) {
             const myName = name;
             const myMarker = marker;
-        
+
             const getName = () => myName;
             const getMarker = () => myMarker;
-        
+
             return {
                 getName,
                 getMarker,
@@ -198,7 +203,7 @@ const game = (function ticTacToe() {
     }
     const setDefaultState = () => {
         roundNumber = 0;
-        board = gameBoard();
+        board.clear();
         tilesToHighlight = [];
     }
     const newGame = () => {
@@ -215,4 +220,4 @@ const game = (function ticTacToe() {
         initialize,
     }
 })();
-game.initialize();
+ticTacToe.initialize();
