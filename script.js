@@ -1,17 +1,3 @@
-function player(name, marker) {
-    const myName = name;
-    const myMarker = marker;
-
-    const getName = () => myName;
-    const getMarker = () => myMarker;
-
-    return {
-        getName,
-        getMarker,
-    }
-}
-
-
 function gameBoard() {
     function cell(symbol="") {
         let marker = symbol;
@@ -85,14 +71,16 @@ const game = (function ticTacToe() {
     let roundNumber;
     let currentPlayer;
     let tilesToHighlight;
+    let phase;
     let players = [undefined, undefined];
 
-    const button = document.body.querySelector("button");
-    const formContainer = document.body.querySelector(".header-bot");
-    const form = document.body.querySelector("form");
+    const [header, main, _] = document.querySelectorAll("body > *");
+    const button = header.querySelector(".content .header-top button");
+    const formContainer = header.querySelector(".content .header-bot");
+    const form = formContainer.querySelector("form");
     const inputs = [...form.querySelectorAll("input[type='text']")];
-    const boardContainer = document.body.querySelector(".board");
-    const info = document.body.querySelector(".info-box p");
+    const boardContainer = main.querySelector(".content .board");
+    const info = main.querySelector(".content .info-box p");
     const viewer = (function () {
         const createBoardView = () => {
             let idx = 0;
@@ -139,8 +127,10 @@ const game = (function ticTacToe() {
     })();
 
     const initialize = () => {
+        phase = "start-new";
         viewer.updateInfo(createMessage());
         button.addEventListener("click", () => {
+            phase = "start-inputs";
             viewer.deleteBoardView();
             viewer.clearInputs();
             viewer.showForm();
@@ -155,6 +145,18 @@ const game = (function ticTacToe() {
         });
     }
     const createPlayers = () => {
+        function player(name, marker) {
+            const myName = name;
+            const myMarker = marker;
+        
+            const getName = () => myName;
+            const getMarker = () => myMarker;
+        
+            return {
+                getName,
+                getMarker,
+            }
+        }
         const [p1name, p2name] = inputs.map(ele => ele.value);
         players[0] = player(p1name, "X");
         players[1] = player(p2name, "O");
@@ -162,15 +164,13 @@ const game = (function ticTacToe() {
     const advanceRound = () => roundNumber++;
     const setCurrentPlayer = () => currentPlayer = players[roundNumber%2];
     const createMessage = () => {
-        let msg;
-        if(button.classList.contains("invisible")) msg = "Waiting for player names...";
-        else if(!boardContainer.children.length) msg = "Greetings! Click 'Start new game' to play!";
-        else {
-            if(tilesToHighlight.size) msg = `Game end. ${currentPlayer.getName()} (${currentPlayer.getMarker()}) wins!`;
-            else if(ROUNDLIMIT < roundNumber) msg = "Game end. It's a tie!";
-            else msg = `It's ${currentPlayer.getName()}'s (${currentPlayer.getMarker()}) turn.`;
+        switch (phase) {
+            case "start-new": return "Greetings! Click 'Start new game' to play!";
+            case "start-inputs": return "Waiting for player names...";
+            case "game": return `It's ${currentPlayer.getName()}'s (${currentPlayer.getMarker()}) turn.`;
+            case "end-tie": return "Game end. It's a tie!";
+            case "end-winner": return `Game end. ${currentPlayer.getName()} (${currentPlayer.getMarker()}) wins!`;
         }
-        return msg;
     }
     const playRound = (event) => {
         const ele = event.target;
@@ -180,7 +180,9 @@ const game = (function ticTacToe() {
             ele.object.setMarker(symbol);
             viewer.updateBoard();
             if(0.5*ROUNDLIMIT <= roundNumber) tilesToHighlight = board.findTriples(symbol);
-            if(tilesToHighlight.size || roundNumber == ROUNDLIMIT + 1) {
+            if(tilesToHighlight.size) phase = "end-winner";
+            else if(roundNumber === ROUNDLIMIT) phase = "end-tie";
+            if(phase.includes("end")) {
                 for(let child of boardContainer.children) {
                     child.classList.remove("empty");
                     if(tilesToHighlight.has(Number(child.dataset.idx))) child.classList.add("winner");
@@ -200,6 +202,7 @@ const game = (function ticTacToe() {
         tilesToHighlight = [];
     }
     const newGame = () => {
+        phase = "game";
         setDefaultState();
         createPlayers();
         setCurrentPlayer();
